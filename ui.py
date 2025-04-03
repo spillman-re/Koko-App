@@ -43,15 +43,24 @@ imagen.pack(pady=10)
 # ----- CONTENEDOR PRINCIPAL -----
 contenedor_principal = tk.Frame(frame, bg="white")
 contenedor_principal.pack(pady=20)
-color_cuadro = "#A9A9A9"
+color_cuadro = "#f0f0f0"
+
+# Estilo de los contenedores
+estilo_contenedor = {
+    "bg": color_cuadro,
+    "relief": "ridge",
+    "borderwidth": 5,
+    "width": 350,
+    "height": 150
+}
 
 # ----- TEXTO A SEÑAS -----
-contenedor_izq = tk.Frame(contenedor_principal, bg=color_cuadro, relief="solid", borderwidth=2, width=350, height=150)
+contenedor_izq = tk.Frame(contenedor_principal, **estilo_contenedor)
 contenedor_izq.grid(row=0, column=0, padx=20, pady=10)
 contenedor_izq.pack_propagate(False)
 
 TextoIndicador1 = tk.Label(contenedor_izq, text="Envie su mensaje de TEXTO a SEÑAS", font=("Arial", 12, "bold"), bg=color_cuadro)
-TextoIndicador1.pack(pady=(10, 5))
+TextoIndicador1.pack(pady=(10))
 
 # Frame interno para Entry y botón de micrófono
 frame_input = tk.Frame(contenedor_izq, bg=color_cuadro)
@@ -96,7 +105,7 @@ BotonEnviarTexto = tk.Button(
 BotonEnviarTexto.pack(pady=10)
 
 # ----- SEÑAS A TEXTO -----
-contenedor_der = tk.Frame(contenedor_principal, bg=color_cuadro, relief="solid", borderwidth=2, width=350, height=150)
+contenedor_der = tk.Frame(contenedor_principal, **estilo_contenedor)
 contenedor_der.grid(row=0, column=1, padx=20, pady=10)
 contenedor_der.pack_propagate(False)
 
