@@ -44,7 +44,7 @@ def centrar_ventana(ventana, ancho, alto):
     ventana.geometry(f'{ancho}x{alto}+{posicion_x}+{posicion_y}')
 
 
-def traducir(entrada_texto):
+def traducir(entrada_texto, root):
     """ Procesa el texto ingresado y reproduce los videos correspondientes """
     texto = entrada_texto.get().strip().lower()
     if not texto:
@@ -68,7 +68,9 @@ def traducir(entrada_texto):
                     messagebox.showerror("Error", f"No se encontró el video para la letra: {letra}")
 
     if videos_a_reproducir:
+        root.withdraw()
         reproducir_videos(videos_a_reproducir)
+        root.deiconify()
 
 
 def encontrar_fragmentos(texto):
@@ -160,6 +162,14 @@ def validar_entrada(event):
 
 
 # FUNCION PARA EJECUTAR LA DETECION DE SENÑAS
-def ejecutar_final_pred():
+def ejecutar_final_pred(root):
     """ Ejecuta el script final_pred.py en un proceso separado """
+    root.withdraw()
     subprocess.run([sys.executable, "final_pred.py"])
+    root.deiconify()
+
+# FUNCION DOCUMENTACION
+
+def abrir_info():
+    ruta_doc = os.path.join(os.path.dirname(__file__), "documentacion", "Documentación del Proyecto.pdf")
+    os.startfile(ruta_doc)
