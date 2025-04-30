@@ -24,99 +24,107 @@ os.environ["THEANO_FLAGS"] = "device=cuda, assert_no_cpu_op=True"
 # Application :
 
 class Application:
-
     def __init__(self):
         self.vs = cv2.VideoCapture(0)
         self.current_image = None
         self.model = load_model('cnn8grps_rad1_model.h5')
-        self.speak_engine=pyttsx3.init()
-        self.speak_engine.setProperty("rate",100)
-        voices=self.speak_engine.getProperty("voices")
-        self.speak_engine.setProperty("voice",voices[0].id)
+        self.speak_engine = pyttsx3.init()
+        self.speak_engine.setProperty("rate", 100)
+        voices = self.speak_engine.getProperty("voices")
+        self.speak_engine.setProperty("voice", voices[0].id)
 
-        self.ct = {}
-        self.ct['blank'] = 0
+        self.ct = {'blank': 0}
         self.blank_flag = 0
-        self.space_flag=False
-        self.next_flag=True
-        self.prev_char=""
-        self.count=-1
-        self.ten_prev_char=[]
-        for i in range(10):
-            self.ten_prev_char.append(" ")
-
+        self.space_flag = False
+        self.next_flag = True
+        self.prev_char = ""
+        self.count = -1
+        self.ten_prev_char = [" "] * 10
 
         for i in ascii_uppercase:
             self.ct[i] = 0
         print("Loaded model from disk")
 
-
+        # Ventana principal
         self.root = tk.Tk()
         self.root.title("Traducción de Señas a Texto")
         self.root.protocol('WM_DELETE_WINDOW', self.destructor)
-        self.root.geometry("1300x700")
 
+        # Obtener la resolución de la pantalla
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        # Establecer el tamaño inicial de la ventana (90% del tamaño de la pantalla)
+        window_width = int(screen_width * 0.9)
+        window_height = int(screen_height * 0.8)
+        self.root.geometry(f"{window_width}x{window_height}+{int(screen_width * 0.05)}+{int(screen_height * 0.05)}")
+
+        # Establecer que la ventana puede ser redimensionada
+        self.root.resizable(True, True)
+
+        # Establecer el tamaño mínimo para la ventana
+        self.root.minsize(800, 600)  # Mínimo 800x600 píxeles (ajustable según necesidad)
+
+        # Tamaño de fuente relativo
+        font_size = int(window_height * 0.03)
+
+        # Panel de cámara
         self.panel = tk.Label(self.root)
-        self.panel.place(x=100, y=3, width=480, height=640)
+        self.panel.place(relx=0.07, rely=0.02, relwidth=0.37, relheight=0.70)
 
-        self.panel2 = tk.Label(self.root)  # initialize image panel
-        self.panel2.place(x=700, y=115, width=400, height=400)
+        # Panel procesado
+        self.panel2 = tk.Label(self.root)
+        self.panel2.place(relx=0.55, rely=0.17, relwidth=0.3, relheight=0.5)
 
-        self.T = tk.Label(self.root)
-        self.T.place(x=60, y=5)
-        self.T.config(text="Koko App - Traducción de Señas a Texto", font=("Courier", 30, "bold"))
+        # Título
+        self.T = tk.Label(self.root, text="Koko App - Traducción de Señas a Texto", font=("Courier", font_size, "bold"))
+        self.T.place(relx=0.04, rely=0.01)
 
-        self.panel3 = tk.Label(self.root)  # Current Symbol
-        self.panel3.place(x=280, y=585)
+        # Caracter detectado
+        self.T1 = tk.Label(self.root, text="Caracter :", font=("Courier", font_size, "bold"))
+        self.T1.place(relx=0.01, rely=0.76)
 
-        self.T1 = tk.Label(self.root)
-        self.T1.place(x=10, y=580)
-        self.T1.config(text="Caracter :", font=("Courier", 30, "bold"))
+        self.panel3 = tk.Label(self.root)
+        self.panel3.place(relx=0.22, rely=0.76)
 
-        self.panel5 = tk.Label(self.root)  # Sentence
-        self.panel5.place(x=260, y=632)
+        # Mensaje
+        self.T3 = tk.Label(self.root, text="Mensaje :", font=("Courier", font_size, "bold"))
+        self.T3.place(relx=0.01, rely=0.83)
 
-        self.T3 = tk.Label(self.root)
-        self.T3.place(x=10, y=632)
-        self.T3.config(text="Mensaje :", font=("Courier", 30, "bold"))
+        self.panel5 = tk.Label(self.root)
+        self.panel5.place(relx=0.21, rely=0.86)
 
-        self.T4 = tk.Label(self.root)
-        self.T4.place(x=10, y=700)
-        self.T4.config(text="Sugerencias :", fg="red", font=("Courier", 30, "bold"))
+        # Sugerencias
+        self.T4 = tk.Label(self.root, text="Sugerencias :", fg="red", font=("Courier", font_size, "bold"))
+        self.T4.place(relx=0.01, rely=0.94)
 
-
-        self.b1=tk.Button(self.root)
-        self.b1.place(x=390,y=700)
+        # Botones de sugerencias
+        self.b1 = tk.Button(self.root)
+        self.b1.place(relx=0.3, rely=0.92)
 
         self.b2 = tk.Button(self.root)
-        self.b2.place(x=590, y=700)
+        self.b2.place(relx=0.45, rely=0.92)
 
         self.b3 = tk.Button(self.root)
-        self.b3.place(x=790, y=700)
+        self.b3.place(relx=0.6, rely=0.92)
 
         self.b4 = tk.Button(self.root)
-        self.b4.place(x=990, y=700)
+        self.b4.place(relx=0.75, rely=0.92)
 
-        self.speak = tk.Button(self.root)
-        self.speak.place(x=1305, y=630)
-        self.speak.config(text="Leer", font=("Courier", 20), wraplength=100, command=self.speak_fun)
+        # Botones Leer y Suprimir
+        self.speak = tk.Button(self.root, text="Leer", font=("Courier", font_size), wraplength=100, command=self.speak_fun)
+        self.speak.place(relx=0.87, rely=0.7)
 
-        self.clear = tk.Button(self.root)
-        self.clear.place(x=1205, y=630)
-        self.clear.config(text="Supr", font=("Courier", 20), wraplength=100, command=self.clear_fun)
+        self.clear = tk.Button(self.root, text="Supr", font=("Courier", font_size), wraplength=100, command=self.clear_fun)
+        self.clear.place(relx=0.75, rely=0.7)
 
-
-
-
-
+        # Variables de texto
         self.str = " "
-        self.ccc=0
+        self.ccc = 0
         self.word = " "
         self.current_symbol = "C"
         self.photo = "Empty"
-
-
-        self.word1=" "
+        self.word1 = " "
         self.word2 = " "
         self.word3 = " "
         self.word4 = " "
@@ -125,91 +133,136 @@ class Application:
 
     def video_loop(self):
         try:
+            # Captura un frame de video
             ok, frame = self.vs.read()
+
+            # Invierte el frame horizontalmente (efecto espejo)
             cv2image = cv2.flip(frame, 1)
+            '''
+               # Control de frecuencia de procesamiento
+            self.frame_counter += 1
+            if self.frame_counter % self.process_every_n_frames != 0:
+                return  # Salta este frame y espera al siguiente
+            '''
+            # Verifica que el frame no esté vacío
             if cv2image.any:
+                # Detecta las manos en el frame usando el primer detector (hd)
                 hands = hd.findHands(cv2image, draw=False, flipType=True)
-                cv2image_copy=np.array(cv2image)
+
+                # Crea una copia del frame original (en BGR)
+                cv2image_copy = np.array(cv2image)
+
+                # Convierte el frame de BGR a RGB
                 cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGB)
+
+                # Convierte la imagen en un objeto PIL Image
                 self.current_image = Image.fromarray(cv2image)
+
+                # Convierte la imagen para usarla en Tkinter
                 imgtk = ImageTk.PhotoImage(image=self.current_image)
+
+                # Actualiza el panel principal con la nueva imagen
                 self.panel.imgtk = imgtk
                 self.panel.config(image=imgtk)
 
+                # Si se detectó al menos una mano
                 if hands[0]:
                     hand = hands[0]
                     map = hand[0]
-                    x, y, w, h=map['bbox']
+
+                    # Extrae las coordenadas del bounding box de la mano
+                    x, y, w, h = map['bbox']
+
+                    # Recorta la región de la imagen donde está la mano, con un offset
                     image = cv2image_copy[y - offset:y + h + offset, x - offset:x + w + offset]
 
+                    # Carga una imagen blanca de fondo
                     white = cv2.imread("./imagenes/white.jpg")
-                    # img_final=img_final1=img_final2=0
+
+                    # Verifica que la imagen recortada no esté vacía
                     if image.all:
+                        # Detecta de nuevo la mano pero ahora en la imagen recortada usando otro detector (hd2)
                         handz = hd2.findHands(image, draw=False, flipType=True)
+
+                        # Incrementa el contador de frames procesados
                         self.ccc += 1
+
+                        # Si se detectó la mano en el recorte
                         if handz[0]:
                             hand = handz[0]
-                            handmap=hand[0]
-                            self.pts = handmap['lmList']
-                            # x1,y1,w1,h1=hand['bbox']
+                            handmap = hand[0]
 
+                            # Guarda los puntos clave de la mano
+                            self.pts = handmap['lmList']
+
+                            # Calcula desplazamientos para centrar la mano en la imagen blanca
                             os = ((400 - w) // 2) - 15
                             os1 = ((400 - h) // 2) - 15
-                            for t in range(0, 4, 1):
-                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                         (0, 255, 0), 3)
-                            for t in range(5, 8, 1):
-                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                         (0, 255, 0), 3)
-                            for t in range(9, 12, 1):
-                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                         (0, 255, 0), 3)
-                            for t in range(13, 16, 1):
-                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                         (0, 255, 0), 3)
-                            for t in range(17, 20, 1):
-                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                         (0, 255, 0), 3)
-                            cv2.line(white, (self.pts[5][0] + os, self.pts[5][1] + os1), (self.pts[9][0] + os, self.pts[9][1] + os1), (0, 255, 0),
-                                     3)
-                            cv2.line(white, (self.pts[9][0] + os, self.pts[9][1] + os1), (self.pts[13][0] + os, self.pts[13][1] + os1), (0, 255, 0),
-                                     3)
-                            cv2.line(white, (self.pts[13][0] + os, self.pts[13][1] + os1), (self.pts[17][0] + os, self.pts[17][1] + os1),
-                                     (0, 255, 0), 3)
-                            cv2.line(white, (self.pts[0][0] + os, self.pts[0][1] + os1), (self.pts[5][0] + os, self.pts[5][1] + os1), (0, 255, 0),
-                                     3)
-                            cv2.line(white, (self.pts[0][0] + os, self.pts[0][1] + os1), (self.pts[17][0] + os, self.pts[17][1] + os1), (0, 255, 0),
-                                     3)
 
+                            # Dibuja las líneas de los dedos conectando los puntos correspondientes
+                            for t in range(0, 4, 1):
+                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                         (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
+                            for t in range(5, 8, 1):
+                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                         (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
+                            for t in range(9, 12, 1):
+                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                         (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
+                            for t in range(13, 16, 1):
+                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                         (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
+                            for t in range(17, 20, 1):
+                                cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                         (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
+
+                            # Dibuja líneas entre los dedos principales para formar la palma
+                            cv2.line(white, (self.pts[5][0] + os, self.pts[5][1] + os1),
+                                     (self.pts[9][0] + os, self.pts[9][1] + os1), (0, 255, 0), 3)
+                            cv2.line(white, (self.pts[9][0] + os, self.pts[9][1] + os1),
+                                     (self.pts[13][0] + os, self.pts[13][1] + os1), (0, 255, 0), 3)
+                            cv2.line(white, (self.pts[13][0] + os, self.pts[13][1] + os1),
+                                     (self.pts[17][0] + os, self.pts[17][1] + os1), (0, 255, 0), 3)
+                            cv2.line(white, (self.pts[0][0] + os, self.pts[0][1] + os1),
+                                     (self.pts[5][0] + os, self.pts[5][1] + os1), (0, 255, 0), 3)
+                            cv2.line(white, (self.pts[0][0] + os, self.pts[0][1] + os1),
+                                     (self.pts[17][0] + os, self.pts[17][1] + os1), (0, 255, 0), 3)
+
+                            # Dibuja los puntos de referencia de la mano
                             for i in range(21):
                                 cv2.circle(white, (self.pts[i][0] + os, self.pts[i][1] + os1), 2, (0, 0, 255), 1)
 
-                            res=white
+                            # Usa la imagen blanca procesada para predecir el gesto
+                            res = white
                             self.predict(res)
 
+                            # Convierte la imagen procesada en formato Tkinter
                             self.current_image2 = Image.fromarray(res)
-
                             imgtk = ImageTk.PhotoImage(image=self.current_image2)
 
+                            # Actualiza el panel de imagen procesada
                             self.panel2.imgtk = imgtk
                             self.panel2.config(image=imgtk)
 
+                            # Actualiza el panel que muestra el símbolo actual
                             self.panel3.config(text=self.current_symbol, font=("Courier", 30))
 
-                            #self.panel4.config(text=self.word, font=("Courier", 30))
-
-
-
+                            # Actualiza los botones de opciones de predicción
                             self.b1.config(text=self.word1, font=("Courier", 20), wraplength=825, command=self.action1)
-                            self.b2.config(text=self.word2, font=("Courier", 20), wraplength=825,  command=self.action2)
-                            self.b3.config(text=self.word3, font=("Courier", 20), wraplength=825,  command=self.action3)
-                            self.b4.config(text=self.word4, font=("Courier", 20), wraplength=825,  command=self.action4)
+                            self.b2.config(text=self.word2, font=("Courier", 20), wraplength=825, command=self.action2)
+                            self.b3.config(text=self.word3, font=("Courier", 20), wraplength=825, command=self.action3)
+                            self.b4.config(text=self.word4, font=("Courier", 20), wraplength=825, command=self.action4)
 
+                # Actualiza el panel que muestra la palabra completa detectada
                 self.panel5.config(text=self.str, font=("Courier", 30), wraplength=1025)
+
         except Exception:
+            # Si ocurre algún error, imprime el error y sigue
             print(Exception.__traceback__)
+
+            # Intenta procesar nuevamente la imagen como en el flujo normal
             hands = hd.findHands(cv2image, draw=False, flipType=True)
-            cv2image_copy=np.array(cv2image)
+            cv2image_copy = np.array(cv2image)
             cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGB)
             self.current_image = Image.fromarray(cv2image)
             imgtk = ImageTk.PhotoImage(image=self.current_image)
@@ -217,80 +270,76 @@ class Application:
             self.panel.config(image=imgtk)
 
             if hands:
-                # #print(" --------- lmlist=",hands[1])
                 hand = hands[0]
                 x, y, w, h = hand['bbox']
                 image = cv2image_copy[y - offset:y + h + offset, x - offset:x + w + offset]
-
-                white = cv2.imread("C:\\Users\\devansh raval\\PycharmProjects\\pythonProject\\white.jpg")
-                # img_final=img_final1=img_final2=0
+                white = cv2.imread("./imagenes/white.jpg")
 
                 handz = hd2.findHands(image, draw=False, flipType=True)
-                print(" ", self.ccc)
                 self.ccc += 1
+
                 if handz:
                     hand = handz[0]
                     self.pts = hand['lmList']
-                    # x1,y1,w1,h1=hand['bbox']
 
                     os = ((400 - w) // 2) - 15
                     os1 = ((400 - h) // 2) - 15
+
                     for t in range(0, 4, 1):
-                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                 (0, 255, 0), 3)
+                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                 (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
                     for t in range(5, 8, 1):
-                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                 (0, 255, 0), 3)
+                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                 (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
                     for t in range(9, 12, 1):
-                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                 (0, 255, 0), 3)
+                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                 (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
                     for t in range(13, 16, 1):
-                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                 (0, 255, 0), 3)
+                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                 (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
                     for t in range(17, 20, 1):
-                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1), (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1),
-                                 (0, 255, 0), 3)
-                    cv2.line(white, (self.pts[5][0] + os, self.pts[5][1] + os1), (self.pts[9][0] + os, self.pts[9][1] + os1), (0, 255, 0),
-                             3)
-                    cv2.line(white, (self.pts[9][0] + os, self.pts[9][1] + os1), (self.pts[13][0] + os, self.pts[13][1] + os1), (0, 255, 0),
-                             3)
-                    cv2.line(white, (self.pts[13][0] + os, self.pts[13][1] + os1), (self.pts[17][0] + os, self.pts[17][1] + os1),
-                             (0, 255, 0), 3)
-                    cv2.line(white, (self.pts[0][0] + os, self.pts[0][1] + os1), (self.pts[5][0] + os, self.pts[5][1] + os1), (0, 255, 0),
-                             3)
-                    cv2.line(white, (self.pts[0][0] + os, self.pts[0][1] + os1), (self.pts[17][0] + os, self.pts[17][1] + os1), (0, 255, 0),
-                             3)
+                        cv2.line(white, (self.pts[t][0] + os, self.pts[t][1] + os1),
+                                 (self.pts[t + 1][0] + os, self.pts[t + 1][1] + os1), (0, 255, 0), 3)
+
+                    cv2.line(white, (self.pts[5][0] + os, self.pts[5][1] + os1),
+                             (self.pts[9][0] + os, self.pts[9][1] + os1), (0, 255, 0), 3)
+                    cv2.line(white, (self.pts[9][0] + os, self.pts[9][1] + os1),
+                             (self.pts[13][0] + os, self.pts[13][1] + os1), (0, 255, 0), 3)
+                    cv2.line(white, (self.pts[13][0] + os, self.pts[13][1] + os1),
+                             (self.pts[17][0] + os, self.pts[17][1] + os1), (0, 255, 0), 3)
+                    cv2.line(white, (self.pts[0][0] + os, self.pts[0][1] + os1),
+                             (self.pts[5][0] + os, self.pts[5][1] + os1), (0, 255, 0), 3)
+                    cv2.line(white, (self.pts[0][0] + os, self.pts[0][1] + os1),
+                             (self.pts[17][0] + os, self.pts[17][1] + os1), (0, 255, 0), 3)
 
                     for i in range(21):
                         cv2.circle(white, (self.pts[i][0] + os, self.pts[i][1] + os1), 2, (0, 0, 255), 1)
 
-                    res=white
+                    res = white
                     self.predict(res)
 
                     self.current_image2 = Image.fromarray(res)
-
                     imgtk = ImageTk.PhotoImage(image=self.current_image2)
-
                     self.panel2.imgtk = imgtk
                     self.panel2.config(image=imgtk)
 
                     self.panel3.config(text=self.current_symbol, font=("Courier", 30))
 
-                    #self.panel4.config(text=self.word, font=("Courier", 30))
-
-
-
                     self.b1.config(text=self.word1, font=("Courier", 20), wraplength=825, command=self.action1)
-                    self.b2.config(text=self.word2, font=("Courier", 20), wraplength=825,  command=self.action2)
-                    self.b3.config(text=self.word3, font=("Courier", 20), wraplength=825,  command=self.action3)
-                    self.b4.config(text=self.word4, font=("Courier", 20), wraplength=825,  command=self.action4)
+                    self.b2.config(text=self.word2, font=("Courier", 20), wraplength=825, command=self.action2)
+                    self.b3.config(text=self.word3, font=("Courier", 20), wraplength=825, command=self.action3)
+                    self.b4.config(text=self.word4, font=("Courier", 20), wraplength=825, command=self.action4)
 
             self.panel5.config(text=self.str, font=("Courier", 30), wraplength=1025)
+
         except Exception:
             print("==", traceback.format_exc())
-        finally:
-            self.root.after(1, self.video_loop)
 
+        finally:
+            # Programa la siguiente ejecución del loop
+            self.root.after(10, self.video_loop)
+
+    
     def distance(self,x,y):
         return math.sqrt(((x[0] - y[0]) ** 2) + ((x[1] - y[1]) ** 2))
 
