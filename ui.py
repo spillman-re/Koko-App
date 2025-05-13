@@ -75,9 +75,13 @@ def iniciar_ui():
     def on_hover(event):
         BotonMicrofono.config(cursor="hand2")
         BotonInfo.config(cursor="hand2")
+        BotonEnviarSena.config(cursor="hand2")
+        BotonEnviarTexto.config(cursor="hand2")
     def on_leave(event):
         BotonMicrofono.config(cursor="")
         BotonInfo.config(cursor="")
+        BotonEnviarSena.config(cursor="")
+        BotonEnviarTexto.config(cursor="")
 
 
     BotonMicrofono = tk.Button(
@@ -103,6 +107,8 @@ def iniciar_ui():
         command=lambda: traducir(entrada_texto,root)
     )
     BotonEnviarTexto.pack(pady=10)
+    BotonEnviarTexto.bind("<Enter>", on_hover)
+    BotonEnviarTexto.bind("<Leave>", on_leave)
 
     # ----- SEÑAS A TEXTO -----
     contenedor_der = tk.Frame(contenedor_principal, bg=color_cuadro, relief="solid", borderwidth=2, width=400, height=300)
@@ -128,6 +134,8 @@ def iniciar_ui():
         command=ejecutar_final_pred
     )
     BotonEnviarSena.pack(pady=10)
+    BotonEnviarSena.bind("<Enter>", on_hover)
+    BotonEnviarSena.bind("<Leave>", on_leave)
 
     # ----- Pie de ventana -----
     TextoTestApp = tk.Label(frame, text="DevU", font=("Arial", 8, "italic"), fg="gray", bg="white")
