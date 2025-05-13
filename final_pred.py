@@ -1,5 +1,6 @@
 # Importing Libraries
 from tkinter import ttk
+from tkinter import messagebox
 import numpy as np
 import math
 import cv2
@@ -84,7 +85,10 @@ class Application:
         # Detección inicial de cámaras
         self.camaras_disponibles = detectar_camaras()
         if not self.camaras_disponibles:
-            print("No se detectaron cámaras.")
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showerror("Error", "No se detectaron camaras.")
+            root.destroy()
             exit()
 
         self.indice_camara = 0  # Por defecto usamos la primera cámara
