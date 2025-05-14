@@ -25,6 +25,11 @@ os.environ["THEANO_FLAGS"] = "device=cuda, assert_no_cpu_op=True"
 # Cache para almacenar información de cámaras
 camera_cache = []
 
+def on_hover(event):
+    event.widget.config(cursor="hand2")
+
+def on_leave(event):
+    event.widget.config(cursor="")
 
 def get_camera_info(index):
     """Obtiene información detallada de una cámara específica"""
@@ -80,9 +85,12 @@ def detectar_camaras(max_dispositivos=10):
 
 
 class Application:
+    
+    
 
     def __init__(self):
         # Detección inicial de cámaras
+        
         self.camaras_disponibles = detectar_camaras()
         if not self.camaras_disponibles:
             root = tk.Tk()
@@ -239,7 +247,31 @@ class Application:
         self.word3 = " "
         self.word4 = " "
 
+        # Asociar eventos de hover
+        self.b1.bind("<Enter>", on_hover)
+        self.b1.bind("<Leave>", on_leave)
+
+        self.b2.bind("<Enter>", on_hover)
+        self.b2.bind("<Leave>", on_leave)
+
+        self.b3.bind("<Enter>", on_hover)
+        self.b3.bind("<Leave>", on_leave)
+
+        self.b4.bind("<Enter>", on_hover)
+        self.b4.bind("<Leave>", on_leave)
+
+        self.speak.bind("<Enter>", on_hover)
+        self.speak.bind("<Leave>", on_leave)
+
+        self.clear.bind("<Enter>", on_hover)
+        self.clear.bind("<Leave>", on_leave)
+
+        self.change_camera_btn.bind("<Enter>", on_hover)
+        self.change_camera_btn.bind("<Leave>", on_leave)
+
         self.video_loop()
+        
+        
     def change_camera(self):
         """Cambia la cámara en tiempo real"""
         selected_text = self.camera_combo.get()
@@ -253,6 +285,8 @@ class Application:
                 if not self.vs.isOpened():
                     print(f"No se pudo abrir la cámara {self.indice_camara}")
                 break
+            
+                
 
     def video_loop(self):
         try:
