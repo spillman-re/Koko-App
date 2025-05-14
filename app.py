@@ -7,32 +7,50 @@ from tkinter import messagebox
 import speech_recognition as sr
 import winsound
 import tkinter as tk
-
+from PIL import Image, ImageTk
 # Directorio de videos
 VIDEO_FOLDER = os.path.join(os.path.dirname(__file__), 'videos')
 
 # FUNCIONES DEL APARTADO DE TEXTO A SEÑAS
 
-def reproducir_video_bienvenida(root):
+
+def reproducir_video_bienvenida(root, callback=None):
     video_path = os.path.join(VIDEO_FOLDER, 'bienvenida.mp4')
     if not os.path.exists(video_path):
         messagebox.showerror("Error", "No se encontró el video de bienvenida.")
         return
 
     cap = cv2.VideoCapture(video_path)
-    while cap.isOpened():
+
+    video_label = tk.Label(root, bg="black")
+    video_label.pack(fill="both", expand=True)
+
+    def mostrar_frame():
         ret, frame = cap.read()
         if not ret:
-            break
-        frame_resized = cv2.resize(frame, (800, 400))
-        cv2.imshow('Bienvenida', frame_resized)
-        cv2.moveWindow('Bienvenida', 400, 200)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+            cap.release()
+            video_label.destroy()
+            if callback:
+                callback()
+            return
 
-    cap.release()
-    cv2.destroyAllWindows()
-    centrar_ventana(root, 820, 400)
+        # Obtener el tamaño actual de la ventana
+        ancho_ventana = root.winfo_width()
+        alto_ventana = root.winfo_height()
+
+        # Redimensionar el frame al tamaño actual de la ventana
+        frame = cv2.resize(frame, (ancho_ventana, alto_ventana))
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(frame)
+        imgtk = ImageTk.PhotoImage(image=img)
+        video_label.imgtk = imgtk
+        video_label.configure(image=imgtk)
+
+        root.after(1, mostrar_frame)
+
+    # Asegura que se obtenga el tamaño real después de que la ventana haya sido inicializada
+    root.update_idletasks()
+    mostrar_frame()
 
 
 def centrar_ventana(ventana, ancho, alto):
@@ -44,6 +62,59 @@ def centrar_ventana(ventana, ancho, alto):
     ventana.geometry(f'{ancho}x{alto}+{posicion_x}+{posicion_y}')
 
 
+'''def reproducir_videos(lista_videos):
+    cv2.namedWindow('TRADUCCION', cv2.WINDOW_AUTOSIZE)
+    video_width, video_height = 640, 640
+    TARGET_FPS = 60
+
+    for ruta_video in lista_videos:
+        cap = cv2.VideoCapture(ruta_video)
+        fps_video = cap.get(cv2.CAP_PROP_FPS)
+        fps_video = fps_video if fps_video > 0 else 30
+        delay = max(1, int(1000 / TARGET_FPS))
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            frame_resized = cv2.resize(frame, (video_width, video_height))
+            cv2.imshow('TRADUCCION', frame_resized)
+            if cv2.waitKey(delay) & 0xFF == ord('q'):
+                cap.release()
+                cv2.destroyAllWindows()
+                return
+
+        cap.release()
+
+    cv2.destroyAllWindows()'''
+def reproducir_videos(lista_videos):
+    cv2.namedWindow('TRADUCCION', cv2.WINDOW_AUTOSIZE)
+    video_width, video_height = 640, 640
+    TARGET_FPS = 60
+
+    for ruta_video in lista_videos:
+        cap = cv2.VideoCapture(ruta_video)
+        fps_video = cap.get(cv2.CAP_PROP_FPS)
+        fps_video = fps_video if fps_video > 0 else 30
+        delay = max(1, int(1000 / TARGET_FPS))
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            frame_resized = cv2.resize(frame, (video_width, video_height))
+            cv2.imshow('TRADUCCION', frame_resized)
+            if cv2.waitKey(delay) & 0xFF == ord('q'):
+                cap.release()
+                cv2.destroyAllWindows()
+                return
+
+        cap.release()
+
+    cv2.destroyAllWindows()
+    
 def traducir(entrada_texto, root):
     """ Procesa el texto ingresado y reproduce los videos correspondientes """
     texto = entrada_texto.get().strip().lower()
@@ -73,6 +144,7 @@ def traducir(entrada_texto, root):
         root.deiconify()
 
 
+
 def encontrar_fragmentos(texto):
     texto = ' '.join(texto.split())  # Elimina espacios extra
     palabras = texto.split()
@@ -94,32 +166,6 @@ def encontrar_fragmentos(texto):
     return fragmentos
 
 
-def reproducir_videos(lista_videos):
-    cv2.namedWindow('TRADUCCION', cv2.WINDOW_AUTOSIZE)
-    video_width, video_height = 640, 640
-    TARGET_FPS = 60
-
-    for ruta_video in lista_videos:
-        cap = cv2.VideoCapture(ruta_video)
-        fps_video = cap.get(cv2.CAP_PROP_FPS)
-        fps_video = fps_video if fps_video > 0 else 30
-        delay = max(1, int(1000 / TARGET_FPS))
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            frame_resized = cv2.resize(frame, (video_width, video_height))
-            cv2.imshow('TRADUCCION', frame_resized)
-            if cv2.waitKey(delay) & 0xFF == ord('q'):
-                cap.release()
-                cv2.destroyAllWindows()
-                return
-
-        cap.release()
-
-    cv2.destroyAllWindows()
 
 
 def escuchar_microfono(BotonMicrofono, entrada_texto, root):
@@ -162,14 +208,12 @@ def validar_entrada(event):
 
 
 # FUNCION PARA EJECUTAR LA DETECION DE SENÑAS
-def ejecutar_final_pred(root):
+def ejecutar_final_pred():
     """ Ejecuta el script final_pred.py en un proceso separado """
-    root.withdraw()
     subprocess.run([sys.executable, "final_pred.py"])
-    root.deiconify()
-
-# FUNCION DOCUMENTACION
-
+    
 def abrir_info():
     ruta_doc = os.path.join(os.path.dirname(__file__), "documentacion", "Documentación del Proyecto.pdf")
     os.startfile(ruta_doc)
+
+
