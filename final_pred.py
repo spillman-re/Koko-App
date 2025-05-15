@@ -124,6 +124,7 @@ class Application:
         self.root = tk.Tk()
         self.root.title("Traducción de Señas a Texto")
         self.root.protocol('WM_DELETE_WINDOW', self.destructor)
+        self.root.state('zoomed')
 
         # Obtener la resolución de la pantalla
         screen_width = self.root.winfo_screenwidth()

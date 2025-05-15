@@ -62,7 +62,7 @@ def iniciar_ui():
     contenedor_izq.grid(row=0, column=0, padx=20, pady=1)
     contenedor_izq.pack_propagate(False)
 
-    TextoIndicador1 = tk.Label(contenedor_izq, text="Envie su mensaje de TEXTO a SEÑAS", font=("Arial", 24, "bold"), bg=color_cuadro)
+    TextoIndicador1 = tk.Label(contenedor_izq, text="Traduzca su mensaje de TEXTO a SEÑAS", font=("Arial", 24, "bold"), bg=color_cuadro)
     TextoIndicador1.pack(pady=(10))
 
     # Frame interno para Entry y botón de micrófono
@@ -120,7 +120,7 @@ def iniciar_ui():
     contenedor_der.grid(row=0, column=1, padx=20, pady=1)
     contenedor_der.pack_propagate(False)
 
-    TextoIndicador2 = tk.Label(contenedor_der, text="Envie su mensaje de SEÑAS a TEXTO", font=("Arial", 24, "bold"), bg=color_cuadro)
+    TextoIndicador2 = tk.Label(contenedor_der, text="Traduzca su mensaje de SEÑAS a TEXTO", font=("Arial", 24, "bold"), bg=color_cuadro)
     TextoIndicador2.pack(pady=(30, 10))
 
     BotonEnviarSena = tk.Button(
@@ -131,7 +131,7 @@ def iniciar_ui():
         height=2,
         bg="#2196F3",
         fg="white",
-        command=ejecutar_final_pred
+        command=lambda: ejecutar_final_pred(root)
     )
     BotonEnviarSena.pack(pady=10)
     BotonEnviarSena.bind("<Enter>", on_hover)

@@ -8,49 +8,45 @@ import speech_recognition as sr
 import winsound
 import tkinter as tk
 from PIL import Image, ImageTk
+
 # Directorio de videos
 VIDEO_FOLDER = os.path.join(os.path.dirname(__file__), 'videos')
 
 # FUNCIONES DEL APARTADO DE TEXTO A SEÑAS
-
-
 def reproducir_video_bienvenida(root, callback=None):
     video_path = os.path.join(VIDEO_FOLDER, 'bienvenida.mp4')
     if not os.path.exists(video_path):
         messagebox.showerror("Error", "No se encontró el video de bienvenida.")
         return
 
+    # Oculta la ventana de Tkinter
+    root.withdraw()
+
     cap = cv2.VideoCapture(video_path)
 
-    video_label = tk.Label(root, bg="black")
-    video_label.pack(fill="both", expand=True)
+    # Crear ventana OpenCV en pantalla completa
+    cv2.namedWindow("BIENVENIDA", cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty("BIENVENIDA", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-    def mostrar_frame():
+    while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
-            cap.release()
-            video_label.destroy()
-            if callback:
-                callback()
-            return
+            break
 
-        # Obtener el tamaño actual de la ventana
-        ancho_ventana = root.winfo_width()
-        alto_ventana = root.winfo_height()
+        cv2.imshow("BIENVENIDA", frame)
 
-        # Redimensionar el frame al tamaño actual de la ventana
-        frame = cv2.resize(frame, (ancho_ventana, alto_ventana))
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = Image.fromarray(frame)
-        imgtk = ImageTk.PhotoImage(image=img)
-        video_label.imgtk = imgtk
-        video_label.configure(image=imgtk)
+        if cv2.waitKey(15) & 0xFF == ord('q'):
+            break
 
-        root.after(1, mostrar_frame)
+    cap.release()
+    cv2.destroyAllWindows()
 
-    # Asegura que se obtenga el tamaño real después de que la ventana haya sido inicializada
-    root.update_idletasks()
-    mostrar_frame()
+    # Restaurar la ventana de Tkinter
+    root.state('zoomed')
+    root.deiconify()
+
+    if callback:
+        callback()
 
 
 def centrar_ventana(ventana, ancho, alto):
@@ -62,32 +58,6 @@ def centrar_ventana(ventana, ancho, alto):
     ventana.geometry(f'{ancho}x{alto}+{posicion_x}+{posicion_y}')
 
 
-'''def reproducir_videos(lista_videos):
-    cv2.namedWindow('TRADUCCION', cv2.WINDOW_AUTOSIZE)
-    video_width, video_height = 640, 640
-    TARGET_FPS = 60
-
-    for ruta_video in lista_videos:
-        cap = cv2.VideoCapture(ruta_video)
-        fps_video = cap.get(cv2.CAP_PROP_FPS)
-        fps_video = fps_video if fps_video > 0 else 30
-        delay = max(1, int(1000 / TARGET_FPS))
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            frame_resized = cv2.resize(frame, (video_width, video_height))
-            cv2.imshow('TRADUCCION', frame_resized)
-            if cv2.waitKey(delay) & 0xFF == ord('q'):
-                cap.release()
-                cv2.destroyAllWindows()
-                return
-
-        cap.release()
-
-    cv2.destroyAllWindows()'''
 def reproducir_videos(lista_videos):
     cv2.namedWindow('TRADUCCION', cv2.WINDOW_AUTOSIZE)
     video_width, video_height = 640, 640
@@ -114,7 +84,8 @@ def reproducir_videos(lista_videos):
         cap.release()
 
     cv2.destroyAllWindows()
-    
+
+
 def traducir(entrada_texto, root):
     """ Procesa el texto ingresado y reproduce los videos correspondientes """
     texto = entrada_texto.get().strip().lower()
@@ -141,9 +112,9 @@ def traducir(entrada_texto, root):
     if videos_a_reproducir:
         root.withdraw()
         reproducir_videos(videos_a_reproducir)
+        root.state('zoomed')
         root.deiconify()
-
-
+  
 
 def encontrar_fragmentos(texto):
     texto = ' '.join(texto.split())  # Elimina espacios extra
@@ -164,8 +135,6 @@ def encontrar_fragmentos(texto):
             i += 1
 
     return fragmentos
-
-
 
 
 def escuchar_microfono(BotonMicrofono, entrada_texto, root):
@@ -206,14 +175,32 @@ def validar_entrada(event):
         return "break"  # Bloquea caracteres especiales
 
 
-
 # FUNCION PARA EJECUTAR LA DETECION DE SENÑAS
-def ejecutar_final_pred():
-    """ Ejecuta el script final_pred.py en un proceso separado """
-    subprocess.run([sys.executable, "final_pred.py"])
+def ejecutar_final_pred(root):
+    """ Muestra mensaje temporal y luego ejecuta final_pred.py """
+    root.withdraw()
+
+    popup = tk.Toplevel(root)
+    popup.title("Cargando")
+    popup.geometry("300x100")
+    popup.configure(bg="white")
+    popup.state('zoomed')
+    popup.attributes("-topmost", True)
+
+    label = tk.Label(popup, text="Inicializando el modelo... Esto puede demorar unos segundos", font=("Arial", 12), bg="white")
+    label.pack(expand=True, pady=20)
+
+    popup.update()  # Asegura que se muestre de inmediato
+
+    def cerrar_popup_y_ejecutar():
+        popup.destroy()
+        subprocess.run([sys.executable, "final_pred.py"])
+        root.state('zoomed')
+        root.deiconify()
+
+    # Espera 5 segundos y luego ejecuta el proceso
+    popup.after(5000, cerrar_popup_y_ejecutar)
     
 def abrir_info():
     ruta_doc = os.path.join(os.path.dirname(__file__), "documentacion", "Documentación del Proyecto.pdf")
     os.startfile(ruta_doc)
-
-
