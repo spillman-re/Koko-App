@@ -16,6 +16,7 @@ root = tk.Tk()
 # root.resizable(False, False)
 root.title("Koko App")
 root.geometry("1000x600")  # Tamaño base más amplio
+root.minsize(800,600)
 root.configure(bg="white")
 root.resizable(False, False)  # Permitir redimensionar
 root.state('zoomed')  # Abrir en pantalla completa
@@ -63,13 +64,13 @@ def iniciar_ui():
     contenedor_izq.grid(row=0, column=0, padx=20, pady=1)
     contenedor_izq.pack_propagate(False)
 
-    TextoIndicador1 = tk.Label(contenedor_izq, text="Traduzca su mensaje de TEXTO a SEÑAS", font=("Arial", 24, "bold"), bg=color_cuadro)
+    TextoIndicador1 = tk.Label(contenedor_izq, text="Traduzca su mensaje de TEXTO a SEÑAS", font=("Arial", 20, "bold"), bg=color_cuadro)
     TextoIndicador1.pack(pady=(10))
 
     # Frame interno para Entry y botón de micrófono
     frame_input = tk.Frame(contenedor_izq, bg=color_cuadro)
     frame_input.pack(pady=5)
-    entrada_texto = tk.Entry(frame_input, width=35, font=("Arial", 20, "italic"))
+    entrada_texto = tk.Entry(frame_input, width=30, font=("Arial", 20, "italic"))
     entrada_texto.pack(side="left", padx=5)
     entrada_texto.bind("<KeyPress>", validar_entrada)
 
@@ -96,7 +97,7 @@ def iniciar_ui():
         activebackground="#A9A9A9",
         command=lambda: escuchar_microfono(BotonMicrofono, entrada_texto, root)
     )
-    BotonMicrofono.pack(side="left", padx=5)
+    BotonMicrofono.pack(side="left", padx=1)
     BotonMicrofono.bind("<Enter>", on_hover)
     BotonMicrofono.bind("<Leave>", on_leave)
     BotonMicrofono.image = microfono_final
@@ -121,7 +122,7 @@ def iniciar_ui():
     contenedor_der.grid(row=0, column=1, padx=20, pady=1)
     contenedor_der.pack_propagate(False)
 
-    TextoIndicador2 = tk.Label(contenedor_der, text="Traduzca su mensaje de SEÑAS a TEXTO", font=("Arial", 24, "bold"), bg=color_cuadro)
+    TextoIndicador2 = tk.Label(contenedor_der, text="Traduzca su mensaje de SEÑAS a TEXTO", font=("Arial", 20, "bold"), bg=color_cuadro)
     TextoIndicador2.pack(pady=(30, 10))
 
     BotonEnviarSena = tk.Button(
