@@ -17,6 +17,7 @@ root = tk.Tk()
 root.title("Koko App")
 root.geometry("1000x600")  # Tamaño base más amplio
 root.configure(bg="white")
+root.resizable(False, False)  # Permitir redimensionar
 root.state('zoomed')  # Abrir en pantalla completa
 
 # ----- FUNCIÓN PARA CARGAR INTERFAZ UNA VEZ FINALIZA EL VIDEO -----

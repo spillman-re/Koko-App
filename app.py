@@ -163,8 +163,17 @@ def escuchar_microfono(BotonMicrofono, entrada_texto, root):
 
 
 def quitar_tildes(texto):
-    """ Normaliza el texto eliminando las tildes """
-    return ''.join(c for c in unicodedata.normalize('NFKD', texto) if not unicodedata.combining(c))
+    texto = texto.replace('ñ', '__enie__')  # Protege ñ
+    texto = texto.replace('Ñ', '__ENIE__')  # Protege Ñ
+    
+    texto = ''.join(
+        c for c in unicodedata.normalize('NFD', texto)
+        if unicodedata.category(c) != 'Mn'
+    )
+    
+    texto = texto.replace('__enie__', 'ñ')  # Restaura ñ
+    texto = texto.replace('__ENIE__', 'Ñ')  # Restaura Ñ
+    return texto
 
 
 def validar_entrada(event):
