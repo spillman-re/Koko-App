@@ -14,7 +14,7 @@ VIDEO_FOLDER = os.path.join(os.path.dirname(__file__), 'videos')
 
 # FUNCIONES DEL APARTADO DE TEXTO A SEÑAS
 def reproducir_video_bienvenida(root, callback=None):
-    video_path = os.path.join(VIDEO_FOLDER, 'bienvenida.mp4')
+    video_path = os.path.join(VIDEO_FOLDER, '~bienvenida.mp4')
     if not os.path.exists(video_path):
         messagebox.showerror("Error", "No se encontró el video de bienvenida.")
         return

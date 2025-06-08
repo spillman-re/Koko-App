@@ -48,7 +48,7 @@ def iniciar_ui():
     contenedor_principal.columnconfigure(1, weight=1)
     contenedor_principal.rowconfigure(0, weight=1)
 
-    color_cuadro = "#f0f0f0"
+    color_cuadro = "#D9D9D9"
 
     # Estilo de los contenedores
     estilo_contenedor = {

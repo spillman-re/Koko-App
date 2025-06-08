@@ -13,6 +13,13 @@ Koko App es una aplicación innovadora que permite traducir de texto a lenguaje 
 - **Interfaz Intuitiva:** Diseño moderno, interactivo y fácil de usar.
 - **Reconocimiento de Voz:** Funcionalidad para dictar mensajes usando el micrófono y convertirlos en texto.
 - **Lectura por voz:** Es capaz de leer el texo traducido.
+
+---
+
+## Extras
+- **Agregar mas frases/palabras de traducción:** Graba tus propias frases y traducciones y agregalas a la carpeta "videos" con el formato "nombre_de_la_frase.mp4".
+- **Manual de uso:** Inicia el programa y clica en el botón con el icono de un libro para acceder al manual de uso.
+- **Alternar cámaras:** En la sección de "detectar señas" puedes altenar las cámaras disponibles para la detección, en caso de que no tengas entonces no se detectará nada.
   
 ---
 
@@ -45,10 +52,10 @@ Koko App es una aplicación innovadora que permite traducir de texto a lenguaje 
    ```bash
    cd Koko-App
 
-3. Instala las dependencias necesarias antes mencionadas:
+3. Instala las dependencias:
 
    ```bash
-   pip install
+   pip install -r requirements.txt
    
 ### Uso
 
